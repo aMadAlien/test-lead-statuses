@@ -1,6 +1,6 @@
 <?php include('components/layout-up.php'); ?>
     <h1>Data Submission Form</h1>
-    <form class="form" method="post" action="process_lead.php">
+    <form class="form" method="post" action="addlead.php">
         <label for="firstName">First Name:</label>
         <input type="text" name="firstName" required><br>
 

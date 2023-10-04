@@ -1,46 +1,55 @@
 <?php
-require_once 'config/Connection.php';
-require_once 'config/Token.php';
+
+$dateFormat = 'Y-m-d H:i:s';
+$limit = 100;
+$page = 0;
+
+$apiUrl = 'https://crm.belmar.pro/api/v1/getstatuses';
+$token = 'ba67df6a-a17c-476f-8e95-bcdb75ed3958';
+
+$dateFrom = isset($_GET['date_from']) ? date($dateFormat, strtotime($_GET['date_from'])) : date($dateFormat, strtotime("-1 month"));
+$dateTo = isset($_GET['date_to']) ? date($dateFormat, strtotime($_GET['date_to'])) : date($dateFormat, time());
+
+$body = array(
+    'date_from' => $dateFrom,
+    'date_to' => $dateTo,
+    'page' => $page,
+    'limit' => $limit
+);
+
+$curl = curl_init();
+curl_setopt_array($curl, array(
+    CURLOPT_URL => $apiUrl,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_ENCODING => '',
+    CURLOPT_MAXREDIRS => 10,
+    CURLOPT_TIMEOUT => 0,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    CURLOPT_CUSTOMREQUEST => 'GET',
+    CURLOPT_POSTFIELDS => $body,
+    CURLOPT_HTTPHEADER => array(
+        'Content-Type: application/json',
+        'token: '.$token
+    ),
+));
 
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $token = (new Token())->validate();
+$response = curl_exec($curl);
+$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-    $orderBy = isset($_GET['sortBy']) ? $_GET['sortBy'] : 'ASC';
-    $startDate = isset($_GET['startDate']) ? $_GET['startDate'] : null;
-    $endDate = isset($_GET['endDate']) ? $_GET['endDate'] : null;
+curl_close($curl);
 
-    $query = 'SELECT * FROM `lead_statuses` WHERE 1';
+if ($httpStatus === 200) {
+    $responseJson = json_decode($response, true);
 
-    if ($startDate !== null && $endDate !== null) {
-        $query .= ' AND `created_at` >= :start_date AND `created_at` <= :end_date';
+    if ($responseJson['status']) {
+        $data = $responseJson['data'];
+    } else {
+        print_r($responseJson);
     }
-
-    $query .= ' ORDER BY `created_at` ' . $orderBy;
-
-    $db = new Connection;
-    $stmt = $db->prepare($query);
-    
-    if ($startDate !== null && $endDate !== null) {
-        $stmt->bindParam(':start_date', $startDate);
-        $stmt->bindParam(':end_date', $endDate);
-    }
-
-    $stmt->execute();
-
-    $response = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    http_response_code(200);
-    echo(json_encode([
-        'status' => true,
-        'message' => 'Request processed successfully',
-        'data' => $response
-    ]));
 } else {
-    http_response_code(405);
-    echo json_encode([
-        'status' => false,
-        'error' => 'Method not allowed'
-    ]);
+    echo 'HTTP Error: ' . $httpStatus;
 }
 
+?>

@@ -1,27 +1,16 @@
 <?php include('components/layout-up.php'); ?>
 
     <h1>Lead Statuses</h1>
-
-    <form method="GET" action="statuses.php">
-        <button type="submit" name="date-asc"
-            style="margin-bottom: 10px; background-color: #28a745; color: #fff; padding: 10px 20px; border: none; cursor: pointer;"
-            >Oldest</button>
-    </form>
-    <form method="GET" action="statuses.php">
-        <button type="submit" name="date-desc"
-            style="background-color: #28a745; color: #fff; padding: 10px 20px; border: none; cursor: pointer;"
-            >Newest</button>
-    </form>
     
     <div>
         <h2>Filter Leads by Date</h1>
-        
+
         <form method="get" action="statuses.php">
-            <label for="start_date">Start Date:</label>
-            <input type="date" name="start_date" id="start_date" required>
+            <label for="date_from">From Date: </label>
+            <input type="date" name="date_from" id="date_from" required>
             
-            <label for="end_date">End Date:</label>
-            <input type="date" name="end_date" id="end_date" required>
+            <label for="date_to">To Date:</label>
+            <input type="date" name="date_to" id="date_to" required>
             
             <input type="submit" value="Filter">
         </form>
@@ -33,15 +22,17 @@
             <th>ID</th>
             <th>Email</th>
             <th>Status</th>
+            <th>FTD</th>
         </tr>
 
         <?php
-            include('./../statuses.php');
-            foreach ($data['data'] as $lead) {
+            include('./../getstatuses.php');
+            foreach ($data as $lead) {
                 echo "<tr>";
                 echo "<td>" . $lead['id'] . "</td>";
                 echo "<td>" . $lead['email'] . "</td>";
                 echo "<td>" . $lead['status'] . "</td>";
+                echo "<td>" . $lead['ftd'] . "</td>";
                 echo "</tr>";
             }
         ?>
